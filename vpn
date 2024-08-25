@@ -1,0 +1,45 @@
+1. hyr en billig vps, exempel hos cloudfanatic,hetzner eller bahnhof.
+
+2. ssh till servern och updatera apt ("apt update && apt upgrade -y")
+
+3. Installera docker på servern 
+"
+curl -sSL https://get.docker.com | sh
+sudo usermod -aG docker $(whoami)
+exit
+"
+
+4. installera brandvägg
+sudo ufw default deny incoming
+
+sudo ufw default allow outgoing
+
+sudo ufw allow 80
+
+sudo ufw allow 123
+
+sudo ufw enable
+
+5. Installera wg-easy, ändra ip till serverns ip och 
+generera en hash online för ditt lösenord
+
+sudo docker run -d \
+  --name=wg-easy \
+  -e LANG=en \
+  -e WG_HOST=IP_ADRESS \
+  -e PASSWORD_HASH='HASH' \
+  -e PORT=80 \
+  -e WG_PORT=123 \
+  -e WG_DEFAULT_DNS=9.9.9.9 \
+  -v ~/.wg-easy:/etc/wireguard \
+  -p 123:123/udp \
+  -p 80:80/tcp \
+  --cap-add=NET_ADMIN \
+  --cap-add=SYS_MODULE \
+  --sysctl="net.ipv4.conf.all.src_valid_mark=1" \
+  --sysctl="net.ipv4.ip_forward=1" \
+  --restart unless-stopped \
+  ghcr.io/wg-easy/wg-easy
+
+6. Gå till serverns ip och logga in med lösenordet du valde tidigare
+nu kan man generera wireguard configurationer
